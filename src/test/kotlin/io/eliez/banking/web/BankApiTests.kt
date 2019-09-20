@@ -10,6 +10,8 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.json.JacksonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.http.contentType
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.restassured.RestAssured
@@ -17,6 +19,9 @@ import io.restassured.http.ContentType
 import io.restassured.module.kotlin.extensions.Given
 import io.restassured.module.kotlin.extensions.Then
 import io.restassured.module.kotlin.extensions.When
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.equalTo
 import org.junit.jupiter.api.*
@@ -159,8 +164,46 @@ class BankApiTests {
             checkBalance(iban2, oldBalance2 + amount)
         }
 
+    @Test
+    @Order(4)
+    fun `transfers are ACID`() = runBlocking {
+        val ibans = TestAccounts.map(NewAccount::iban)
+        val numIterations = 1_000
+        val maxAmountInCents = 100
+        val requests: MutableList<Deferred<Unit>> = ArrayList(numIterations * ibans.size)
+        // pre-computed to simplify and reduce latency on submitting parallel requests
+        val nextIban = ibans.indices
+            .map { idx -> ibans[(idx + 1) % ibans.size] }
+        coroutineScope {
+            for (iter in 1..numIterations) {
+                val amountInCents = (iter % maxAmountInCents) + 1
+                val amount = amountInCents.toBigDecimal().scaleByPowerOfTen(-2)
+                ibans.forEachIndexed { index, iban ->
+                    requests.add(
+                        async {
+                            makeTransfer(iban, nextIban[index], amount)
+                        }
+                    )
+                }
+            }
+            requests.forEach { req ->
+                req.await()
+            }
+        }
+        // since the transfers are cyclic, the accounts should have the same balance at the end of the iterations
+        TestAccounts.forEach { acc ->
+            checkBalance(acc.iban, acc.balance)
+        }
+    }
+
     private suspend fun getBalance(iban: String) =
         client.get<NewAccount>("http://localhost:$SERVER_PORT/api/v1/accounts/$iban").balance
+
+    private suspend inline fun makeTransfer(iban1: String, iban2: String, amount: BigDecimal) =
+        client.post<Unit>("http://localhost:$SERVER_PORT/api/v1/transfers") {
+            contentType(io.ktor.http.ContentType.Application.Json)
+            body = NewTransfer(iban1, iban2, amount)
+        }
 
     private fun checkBalance(iban: String, expectedBalance: BigDecimal) {
         Given {

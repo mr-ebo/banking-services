@@ -27,8 +27,16 @@ class BankService {
         require(transfer.fromAccount != transfer.toAccount) { "Source and destination accounts are the same" }
         require(transfer.amount > BigDecimal.ZERO) { "Invalid amount" }
 
-        val fromAcc: Account? = findAccountForUpdate(transfer.fromAccount)
-        val toAcc: Account? = findAccountForUpdate(transfer.toAccount)
+        val fromAcc: Account?
+        val toAcc: Account?
+        // lock accounts in order to avoid deadlocks
+        if (transfer.fromAccount < transfer.toAccount) {
+            fromAcc = findAccountForUpdate(transfer.fromAccount)
+            toAcc = findAccountForUpdate(transfer.toAccount)
+        } else {
+            toAcc = findAccountForUpdate(transfer.toAccount)
+            fromAcc = findAccountForUpdate(transfer.fromAccount)
+        }
         requireNotNull(fromAcc) { "Unknown source account" }
         requireNotNull(toAcc) { "Unknown destination account" }
         check(fromAcc.balance >= transfer.amount) { "Insufficient funds" }
