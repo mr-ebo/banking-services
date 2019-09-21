@@ -1,5 +1,7 @@
 package io.eliez.banking.web
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.eliez.banking.common.serializeAsString
 import io.eliez.banking.model.NewAccount
 import io.eliez.banking.model.NewTransfer
@@ -23,6 +25,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.CoreMatchers.any
 import org.hamcrest.CoreMatchers.equalTo
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
@@ -53,12 +56,13 @@ class BankApiTests {
         )
         private const val UNKNOWN_IBAN = "DK3650511641344966"
 
-        val client: HttpClient by lazy {
-            HttpClient(Apache) {
-                install(JsonFeature) {
-                    serializer = JacksonSerializer {
-                        serializeAsString(BigDecimal::class)
-                    }
+        lateinit var mapper: ObjectMapper
+
+        val client = HttpClient(Apache) {
+            install(JsonFeature) {
+                serializer = JacksonSerializer {
+                    mapper = this
+                    serializeAsString(BigDecimal::class)
                 }
             }
         }
@@ -104,6 +108,29 @@ class BankApiTests {
                 }
             }.stream()
         }
+
+        @JvmStatic
+        @Suppress("unused")
+        fun incompleteCreateAccountJsonProvider(): Stream<String> {
+            val account = NewAccount(UNKNOWN_IBAN, BigDecimal.ONE)
+            return incompleteJsonGenerator(account)
+        }
+
+        @JvmStatic
+        @Suppress("unused")
+        fun invalidTransferJsonProvider(): Stream<String> {
+            val transfer = NewTransfer(TestAccounts[0].iban, TestAccounts[1].iban, BigDecimal.ONE)
+            return incompleteJsonGenerator(transfer)
+        }
+
+        private fun incompleteJsonGenerator(any: Any): Stream<String> {
+            val templateNode: ObjectNode = mapper.valueToTree(any)
+            return Iterable { templateNode.fieldNames() }
+                .map { name ->
+                    val copy = templateNode.deepCopy().apply { remove(name) }
+                    mapper.writeValueAsString(copy)
+                }.stream()
+        }
     }
 
     @ParameterizedTest(name = "create account {0}")
@@ -117,6 +144,21 @@ class BankApiTests {
             post("/api/v1/accounts")
         } Then {
             statusCode(HTTP_CREATED)
+        }
+    }
+
+    @ParameterizedTest(name = "fail to create account due to incomplete request: {0}")
+    @MethodSource("incompleteCreateAccountJsonProvider")
+    @Order(2)
+    fun `fail to create account due to incomplete request`(json: String) {
+        Given {
+            contentType(ContentType.JSON)
+            body(json)
+        } When {
+            post("/api/v1/accounts")
+        } Then {
+            statusCode(HTTP_BAD_REQUEST)
+            body("message", any(String::class.java))
         }
     }
 
@@ -140,6 +182,12 @@ class BankApiTests {
         @Suppress("UNUSED_PARAMETER") reason: String,
         iban1: String, iban2: String, amount: BigDecimal
     ) = testTransfer(iban1, iban2, amount, HTTP_BAD_REQUEST)
+
+    @ParameterizedTest(name = "fail to transfer due to incomplete request: {0}")
+    @MethodSource("incompleteTransferJsonProvider")
+    @Order(2)
+    fun `fail to transfer due to incomplete request`(json: String) =
+        testTransfer(json, HTTP_BAD_REQUEST)
 
     @Test
     @Order(2)
@@ -216,14 +264,20 @@ class BankApiTests {
         }
     }
 
-    private fun testTransfer(iban1: String, iban2: String, amount: BigDecimal, expectedStatusCode: Int) {
+    private fun testTransfer(iban1: String, iban2: String, amount: BigDecimal, expectedStatusCode: Int) =
+        testTransfer(NewTransfer(iban1, iban2, amount), expectedStatusCode)
+
+    private fun testTransfer(requestBody: Any, expectedStatusCode: Int) {
         Given {
             contentType(ContentType.JSON)
-            body(NewTransfer(iban1, iban2, amount))
+            body(requestBody)
         } When {
             post("/api/v1/transfers")
         } Then {
             statusCode(expectedStatusCode)
+            if (expectedStatusCode !in (200 until 300)) {
+                body("message", any(String::class.java))
+            }
         }
     }
 }

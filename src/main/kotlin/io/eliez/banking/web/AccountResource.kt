@@ -1,5 +1,6 @@
 package io.eliez.banking.web
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import io.eliez.banking.model.NewAccount
 import io.eliez.banking.service.BankService
 import io.ktor.application.call
@@ -26,8 +27,17 @@ fun Route.account(bankService: BankService) {
         }
 
         post("/") {
-            val account = call.receive<NewAccount>()
-            call.respond(HttpStatusCode.Created, bankService.createAccount(account))
+            val (statusCode: HttpStatusCode, message: String?) = try {
+                val account = call.receive<NewAccount>()
+                bankService.createAccount(account)
+                HttpStatusCode.Created to null
+            } catch (e: JsonProcessingException) {
+                HttpStatusCode.BadRequest to e.message
+            }
+            call.response.status(statusCode)
+            message?.let {
+                call.respond(mapOf("message" to it))
+            }
         }
     }
 }
