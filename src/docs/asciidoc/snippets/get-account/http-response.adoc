@@ -1,0 +1,13 @@
+[source,http,options="nowrap"]
+----
+HTTP/1.1 200 OK
+Date: Sat, 21 Sep 2019 16:13:44 GMT
+Server: ktor-server-core/1.2.4 ktor-server-core/1.2.4
+Content-Length: 60
+Content-Type: application/json; charset=UTF-8
+
+{
+  "iban" : "DK3650511641344966",
+  "balance" : "1234.56"
+}
+----

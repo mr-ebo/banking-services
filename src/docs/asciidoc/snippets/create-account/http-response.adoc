@@ -1,0 +1,8 @@
+[source,http,options="nowrap"]
+----
+HTTP/1.1 201 Created
+Date: Sat, 21 Sep 2019 16:12:51 GMT
+Server: ktor-server-core/1.2.4 ktor-server-core/1.2.4
+Content-Length: 0
+
+----

@@ -5,6 +5,7 @@ import io.eliez.banking.common.serializeAsString
 import io.eliez.banking.service.BankService
 import io.eliez.banking.service.DatabaseFactory
 import io.eliez.banking.web.account
+import io.eliez.banking.web.onlineApiDoc
 import io.eliez.banking.web.transfer
 import io.ktor.application.Application
 import io.ktor.application.install
@@ -33,6 +34,7 @@ fun Application.module() {
     val bankService = BankService()
 
     install(Routing) {
+        onlineApiDoc()
         account(bankService)
         transfer(bankService)
     }

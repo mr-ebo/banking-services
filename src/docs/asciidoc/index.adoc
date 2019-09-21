@@ -1,0 +1,100 @@
+= Simple Banking API
+Eliezio Oliveira;
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:sectlinks:
+
+:snippets: ./snippets
+
+Version {project-version}
+
+== Overview
+
+A RESTful API for money transfers between accounts.
+
+== HTTP Verbs and Status Codes
+
+Ths API tries to adhere as closely as possible to standard HTTP and REST conventions.
+The `GET` and `POST` HTTP verbs are used to retrieve and create a resource respectively.
+The HTTP status codes currently in use are:
+
+|===
+| Status code | Usage
+
+| `200 OK`
+| Standard response for successful HTTP requests. Used for GET requests.
+
+| `201 Created`
+| The POST request has been fulfilled and resulted in a new resource being created.
+
+| `400 Bad Request`
+| The server cannot or will not process the request due to something that is perceived to be a client error
+(e.g., malformed request syntax, invalid request message framing, or deceptive request routing).
+
+The response body usually contains a JSON field "message" with more information about the error.
+| `404 Not Found`
+| The requested resource could not be found but may be available again in the future.
+Subsequent requests by the client are permissible.
+
+| `409 Conflict`
+| The request could not be completed due to a conflict with the current state of the target resource.
+
+Particularly on this API, this error occurs when there aren't enough funds in the source account for
+the transfer.
+|===
+
+== Transfer Resource
+
+[[make-transfer]]
+=== Make money transfer
+
+`POST /api/v1/transfers`
+
+==== Example request/response
+
+include::{snippets}/make-transfer/curl-request.adoc[]
+
+include::{snippets}/make-transfer/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/make-transfer/request-fields.adoc[]
+
+== Account Resource
+
+[[create-account]]
+=== Create account
+
+`POST /api/v1/accounts`
+
+==== Example request/response
+
+include::{snippets}/create-account/curl-request.adoc[]
+
+include::{snippets}/create-account/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/create-account/request-fields.adoc[]
+
+[[get-account]]
+=== Retrieve account
+
+`GET /api/v1/accounts/{iban}`
+
+==== Example request/response
+
+include::{snippets}/get-account/curl-request.adoc[]
+
+include::{snippets}/get-account/http-response.adoc[]
+
+==== Request structure
+
+include::{snippets}/get-account/path-parameters.adoc[]
+
+==== Response structure
+
+include::{snippets}/get-account/response-fields.adoc[]

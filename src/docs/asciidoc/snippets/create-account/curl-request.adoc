@@ -1,0 +1,4 @@
+[source,bash]
+----
+$ curl http://localhost:8080/api/v1/accounts -iH "Content-Type: application/json" -d '{"iban": "DK3650511641344966", "balance": "1234.56"}'
+----

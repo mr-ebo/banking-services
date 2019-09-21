@@ -1,0 +1,12 @@
+|===
+|Path|Type|Description
+
+|`iban`
+|`String`
+|Account IBAN identification.
+
+|`balance`
+|`String`
+|Current account balance in Euros.
+
+|===

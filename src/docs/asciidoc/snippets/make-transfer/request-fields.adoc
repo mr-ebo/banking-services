@@ -1,0 +1,16 @@
+|===
+|Path|Type|Description
+
+|`fromAccount`
+|`String`
+|Source account IBAN identification.
+
+|`toAccount`
+|`String`
+|Destination account IBAN identification.
+
+|`amount`
+|`String`
+|Amount in Euros. Must be always positive.
+
+|===
