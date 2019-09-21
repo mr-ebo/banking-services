@@ -146,7 +146,6 @@ class BankApiTests {
 
     @ParameterizedTest(name = "fail to create account due to incomplete request: {0}")
     @MethodSource("incompleteCreateAccountJsonProvider")
-    @Order(2)
     fun `fail to create account due to incomplete request`(json: String) {
         Given {
             contentType(ContentType.JSON)
@@ -161,7 +160,6 @@ class BankApiTests {
 
     @ParameterizedTest(name = "fail to retrieve account [{0}]")
     @ValueSource(strings = ["", UNKNOWN_IBAN])
-    @Order(2)
     fun `attempt to retrieve unknown or undefined account yields 404`(iban: String) {
         Given {
             this
@@ -174,7 +172,6 @@ class BankApiTests {
 
     @ParameterizedTest(name = "fail to transfer due to {0}")
     @MethodSource("invalidTransferProvider")
-    @Order(2)
     fun `fail to transfer due to invalid parameter`(
         @Suppress("UNUSED_PARAMETER") reason: String,
         iban1: String, iban2: String, amount: BigDecimal
@@ -182,12 +179,10 @@ class BankApiTests {
 
     @ParameterizedTest(name = "fail to transfer due to incomplete request: {0}")
     @MethodSource("incompleteTransferJsonProvider")
-    @Order(2)
     fun `fail to transfer due to incomplete request`(json: String) =
         testTransfer(json, HTTP_BAD_REQUEST)
 
     @Test
-    @Order(2)
     fun `fail to transfer 200 from account due to insufficient funds`() {
         val acc1 = TestAccounts[0]
         val acc2 = TestAccounts[1]
@@ -199,7 +194,6 @@ class BankApiTests {
 
     @ParameterizedTest(name = "transfer {2} from {0} to {1}")
     @MethodSource("cyclicTransfersProvider")
-    @Order(3)
     fun `transfer from account with sufficient funds`(iban1: String, iban2: String, amount: BigDecimal) =
         runBlocking {
             val oldBalance1 = getBalance(iban1)
@@ -210,7 +204,6 @@ class BankApiTests {
         }
 
     @Test
-    @Order(4)
     fun `transfers are ACID`() = runBlocking {
         val ibans = TestAccounts.map(NewAccount::iban)
         val numIterations = 1_000
