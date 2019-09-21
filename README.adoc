@@ -1,0 +1,58 @@
+= Simple Banking API
+Eliezio Oliveira;
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 3
+:sectlinks:
+
+:latest-version: 1.0.0
+
+image:https://img.shields.io/travis/eliezio/banking-services[Travis (.org)]
+image:https://img.shields.io/codecov/c/gh/eliezio/banking-services[Codecov]
+image:https://images.microbadger.com/badges/image/eliezio/banking-services.svg[dockeri.co, link="https://hub.docker.com/r/eliezio/banking-services"]
+image:https://img.shields.io/github/license/eliezio/banking-services[GitHub]
+
+== Overview
+
+A RESTful API for money transfers between accounts.
+
+== Running the application
+
+You can choose between running the uber-jar built from sources, or launch
+a docker container already pushed to the Docker Hub public repository.
+
+=== Building and running from sources
+
+This option requires a linux environment with Git and Java SDK 8+ installed.
+
+After cloning this repository, the uber-jar must be created by
+running the following command:
+
+[source,shell]
+----
+$ ./gradlew build
+----
+
+To run the application use:
+
+[source,shell,subs=attributes]
+----
+$ java -jar build/libs/banking-services-*-all.jar
+----
+
+=== From pre-built Docker image
+
+[source,shell,subs=attributes]
+----
+$ docker run -it --rm eliezio/banking-services:{latest-version}
+----
+
+== Using the application
+
+The API documentation is available http://localhost:8080/docs/index.html
+
+== License
+
+Copyright (C) 2019 Eliezio Oliveira.
