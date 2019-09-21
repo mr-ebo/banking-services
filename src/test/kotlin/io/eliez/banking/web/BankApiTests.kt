@@ -100,13 +100,10 @@ class BankApiTests {
         @JvmStatic
         @Suppress("unused")
         fun cyclicTransfersProvider(): Stream<Arguments> {
-            var previousAcc = TestAccounts[TestAccounts.size - 1]
-            val amount = previousAcc.balance
-            return TestAccounts.map { acc ->
-                arguments(previousAcc.iban, acc.iban, amount).also {
-                    previousAcc = acc
-                }
-            }.stream()
+            val amount = TestAccounts[0].balance
+            return TestAccounts
+                .mapWithNext { acc, nextAcc -> arguments(acc.iban, nextAcc.iban, amount) }
+                .stream()
         }
 
         @JvmStatic
@@ -118,7 +115,7 @@ class BankApiTests {
 
         @JvmStatic
         @Suppress("unused")
-        fun invalidTransferJsonProvider(): Stream<String> {
+        fun incompleteTransferJsonProvider(): Stream<String> {
             val transfer = NewTransfer(TestAccounts[0].iban, TestAccounts[1].iban, BigDecimal.ONE)
             return incompleteJsonGenerator(transfer)
         }
@@ -219,20 +216,15 @@ class BankApiTests {
         val numIterations = 1_000
         val maxAmountInCents = 100
         val requests: MutableList<Deferred<Unit>> = ArrayList(numIterations * ibans.size)
-        // pre-computed to simplify and reduce latency on submitting parallel requests
-        val nextIban = ibans.indices
-            .map { idx -> ibans[(idx + 1) % ibans.size] }
         coroutineScope {
             for (iter in 1..numIterations) {
                 val amountInCents = (iter % maxAmountInCents) + 1
                 val amount = amountInCents.toBigDecimal().scaleByPowerOfTen(-2)
-                ibans.forEachIndexed { index, iban ->
-                    requests.add(
-                        async {
-                            makeTransfer(iban, nextIban[index], amount)
-                        }
-                    )
-                }
+                requests.addAll(TestAccounts.mapWithNext { acc, nextAcc ->
+                    async {
+                        makeTransfer(acc.iban, nextAcc.iban, amount)
+                    }
+                })
             }
             requests.forEach { req ->
                 req.await()
