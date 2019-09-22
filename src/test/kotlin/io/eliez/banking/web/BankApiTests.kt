@@ -144,6 +144,20 @@ class BankApiTests {
         }
     }
 
+    @ParameterizedTest(name = "fail to retrieve account [{0}]")
+    @MethodSource("testAccountsProvider")
+    fun `retrieve created accounts`(newAccount: NewAccount) {
+        Given {
+            accept(ContentType.JSON)
+        } When {
+            get("/api/v1/accounts/${newAccount.iban}")
+        } Then {
+            statusCode(HTTP_OK)
+            body("iban", equalTo(newAccount.iban))
+            body("balance", equalTo(newAccount.balance.toString()))
+        }
+    }
+
     @ParameterizedTest(name = "fail to create account due to incomplete request: {0}")
     @MethodSource("incompleteCreateAccountJsonProvider")
     fun `fail to create account due to incomplete request`(json: String) {
