@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
+    groovy
     application
     jacoco
 
@@ -56,13 +57,14 @@ dependencies {
 
     runtime("ch.qos.logback", "logback-classic", "1.2.3")
 
-    testImplementation("io.ktor", "ktor-client-apache", ktorVersion)
-    testImplementation("io.ktor", "ktor-client-jackson", ktorVersion)
-    testImplementation("io.rest-assured", "kotlin-extensions", "4.1.1")
-    testImplementation("org.junit.jupiter", "junit-jupiter", "5.5.1")
+    testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
+    testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", "0.7.2") {
+        exclude("commons-logging", "commons-logging")
+    }
+    testRuntime("org.slf4j", "jcl-over-slf4j", "1.7.26")
 }
 
-tasks.withType<KotlinCompile> {
+tasks.compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
@@ -70,10 +72,6 @@ tasks.withType<KotlinCompile> {
  * Test
  */
 tasks {
-    test {
-        useJUnitPlatform()
-    }
-
     jacocoTestReport {
         reports {
             html.isEnabled = true
