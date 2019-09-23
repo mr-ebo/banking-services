@@ -9,8 +9,8 @@ Eliezio Oliveira;
 
 :latest-version: 1.0.0
 
-image:https://img.shields.io/travis/eliezio/banking-services[Travis (.org)]
-image:https://img.shields.io/codecov/c/gh/eliezio/banking-services[Codecov]
+image:https://img.shields.io/travis/eliezio/banking-services[Travis (.org), link="https://travis-ci.org/eliezio/banking-services"]
+image:https://img.shields.io/codecov/c/gh/eliezio/banking-services[Codecov, link="https://codecov.io/gh/eliezio/banking-services"]
 image:https://images.microbadger.com/badges/image/eliezio/banking-services.svg[dockeri.co, link="https://hub.docker.com/r/eliezio/banking-services"]
 image:https://img.shields.io/github/license/eliezio/banking-services[GitHub]
 
