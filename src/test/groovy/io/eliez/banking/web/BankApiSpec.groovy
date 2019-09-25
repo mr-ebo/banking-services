@@ -25,6 +25,7 @@ class BankApiSpec extends Specification {
     // TODO: should be random to avoid clashing with any server running on local machine.
     //  See https://github.com/ktorio/ktor/issues/909
     static final int SERVER_PORT = 55555
+    static final String TRACE_ID_HEADER = 'X-B3-TraceId'
 
     static final List<NewAccount> KNOWN_ACCOUNTS = [
         new NewAccount("BR7399674773964894418786327F5", "106.93".toBigDecimal()),
@@ -48,6 +49,8 @@ class BankApiSpec extends Specification {
         serverStart(SERVER_PORT)
     }
 
+    def cleanup() {
+        ClientLogTraceId.instance.cleanup()
     }
 
     @Unroll
@@ -71,6 +74,45 @@ class BankApiSpec extends Specification {
         where:
             iban << KNOWN_IBANS
             newAccount << KNOWN_ACCOUNTS
+    }
+
+    def 'traceId is propagated by the server when provided'() {
+        given:
+            def traceId = SelfInjectingTraceId.instance.toString()
+            client.headers = [(TRACE_ID_HEADER): traceId]
+            ServerLogEventsCatcher evtCatcher = new ServerLogEventsCatcher().tap {
+                hook()
+            }
+            def iban = KNOWN_IBANS[0]
+        when:
+            def response = client.get(path: "/api/v1/accounts/$iban") as HttpResponseDecorator
+        then:
+            response.status == 200
+            response.headers[TRACE_ID_HEADER].value == traceId
+        and:
+            evtCatcher.assertMdc('traceId', traceId)
+        cleanup:
+            evtCatcher.unhook()
+    }
+
+    def 'traceId should be generated when not provided'() {
+        given:
+            ServerLogEventsCatcher evtCatcher = new ServerLogEventsCatcher().tap {
+                hook()
+            }
+            def iban = KNOWN_IBANS[0]
+        when:
+            def response = client.get(path: "/api/v1/accounts/$iban") as HttpResponseDecorator
+        and:
+            def expectedTraceId = response.headers[TRACE_ID_HEADER].value
+        then:
+            response.status == 200
+        and:
+            !expectedTraceId.isBlank()
+        and:
+            evtCatcher.assertMdc('traceId', expectedTraceId)
+        cleanup:
+            evtCatcher.unhook()
     }
 
     @Unroll
@@ -204,7 +246,8 @@ class BankApiSpec extends Specification {
                     asyncClient.post(
                         path: '/api/v1/transfers',
                         body: [fromAccount: iban1, toAccount: iban2, amount: amount],
-                        requestContentType: JSON
+                        requestContentType: JSON,
+                        headers: [(TRACE_ID_HEADER): SelfInjectingTraceId.instance]
                     ) as Future
                 }
         then:
@@ -214,6 +257,16 @@ class BankApiSpec extends Specification {
             KNOWN_ACCOUNTS.forEach { acc ->
                 assert getBalance(acc.iban) == acc.balance
             }
+    }
+
+    @Singleton
+    static class SelfInjectingTraceId {
+        @Override
+        String toString() {
+            def traceId = IdGenerator.instance.generate()
+            ClientLogTraceId.instance.setup(traceId)
+            return traceId
+        }
     }
 
     static void serverStart(int port) {

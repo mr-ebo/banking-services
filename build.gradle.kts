@@ -58,10 +58,9 @@ dependencies {
     runtime("ch.qos.logback", "logback-classic", "1.2.3")
 
     testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
-    testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", "0.7.2") {
-        exclude("commons-logging", "commons-logging")
-    }
-    testRuntime("org.slf4j", "jcl-over-slf4j", "1.7.26")
+    testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", "0.7.2")
+    testImplementation("log4j", "log4j", "1.2.17")
+    testImplementation("ch.qos.logback", "logback-classic", "1.2.3")
 }
 
 tasks.compileKotlin {
@@ -138,7 +137,11 @@ jib {
             .joinToString("/")
     }
     container {
-        jvmFlags = listOf("-noverify")
+        jvmFlags = listOf(
+            "-noverify",
+            // See http://www.thezonemanager.com/2015/07/whats-so-special-about-devurandom.html
+            "-Djava.security.egd=file:/dev/./urandom"
+        )
         mainClass = application.mainClassName
         ports = listOf("8080")
     }
