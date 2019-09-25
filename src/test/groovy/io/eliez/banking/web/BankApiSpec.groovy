@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import groovyx.net.http.AsyncHTTPBuilder
+import groovyx.net.http.HttpResponseDecorator
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
 import io.eliez.banking.model.NewAccount
@@ -37,21 +38,16 @@ class BankApiSpec extends Specification {
     static final String UNKNOWN_IBAN = "DK3650511641344966"
 
     @Shared
-    def mapper = new ObjectMapper()
+    def mapper = new ObjectMapper().tap {
+        configOverride(BigDecimal).format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING)
+    }
 
-    @Shared
     def client = new RESTClient("http://localhost:$SERVER_PORT")
 
     def setupSpec() {
-        def applicationEnvironment = commandLineEnvironment(["-port=$SERVER_PORT"] as String[])
-        def engine = new NettyApplicationEngine(applicationEnvironment, {})
-        engine.start(false)
+        serverStart(SERVER_PORT)
+    }
 
-        engine.addShutdownHook {
-            engine.stop(0, 0, TimeUnit.SECONDS)
-        }
-
-        mapper.configOverride(BigDecimal).format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING)
     }
 
     @Unroll
@@ -61,7 +57,7 @@ class BankApiSpec extends Specification {
                 path: '/api/v1/accounts',
                 body: newAccount,
                 requestContentType: JSON
-            )
+            ) as HttpResponseDecorator
         then:
             response.status == 201
         where:
@@ -176,7 +172,7 @@ class BankApiSpec extends Specification {
                 path: '/api/v1/transfers',
                 body: transfer,
                 requestContentType: JSON
-            )
+            ) as HttpResponseDecorator
         then:
             response.status == 201
         and:
@@ -188,7 +184,6 @@ class BankApiSpec extends Specification {
             amount = KNOWN_ACCOUNTS[0].balance
     }
 
-    @Unroll
     def 'transfers are ACID'() {
         given:
             def numIterations = 1_000
@@ -221,6 +216,16 @@ class BankApiSpec extends Specification {
             }
     }
 
+    static void serverStart(int port) {
+        def applicationEnvironment = commandLineEnvironment(["-port=$port"] as String[])
+        new NettyApplicationEngine(applicationEnvironment, {}).with {
+            start(false)
+            addShutdownHook {
+                stop(0, 0, TimeUnit.SECONDS)
+            }
+        }
+    }
+
     def incompleteJsonGenerator(Object obj) {
         ObjectNode templateNode = mapper.valueToTree(obj)
         return templateNode.fieldNames().collect { name ->
@@ -234,7 +239,7 @@ class BankApiSpec extends Specification {
         def response = client.get(
             path: "/api/v1/accounts/$iban",
             contentType: JSON
-        )
+        ) as HttpResponseDecorator
         assert response.status == 200
         assert response.data.iban == iban
         return response.data.balance as BigDecimal
