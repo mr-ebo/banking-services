@@ -35,7 +35,7 @@ repositories {
     maven(url = "https://dl.bintray.com/kotlin/ktor")   // for newest ktor artifacts
 }
 
-val ktorVersion = "1.2.4"
+val ktorVersion = "1.3.1"
 val exposedVersion = "0.17.3"
 
 application {
