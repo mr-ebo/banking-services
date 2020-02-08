@@ -13,7 +13,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.1.0"
 
     // generate terse test report on console
-    id("com.adarshr.test-logger") version "1.7.0"
+    id("com.adarshr.test-logger") version "2.0.0"
 
     // report current code coverage
     id("com.github.ksoichiro.console.reporter") version "0.6.2"
