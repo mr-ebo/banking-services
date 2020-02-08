@@ -4,7 +4,7 @@ plugins {
     application
     jacoco
 
-    kotlin("jvm") version "1.3.50"
+    kotlin("jvm") version "1.3.60"
 
     // infers 'project.version' from last annotated Git tag
     id("nebula.release") version "11.1.0"
