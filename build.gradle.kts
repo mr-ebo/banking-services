@@ -22,7 +22,7 @@ plugins {
     id("org.asciidoctor.convert").version("1.5.9")
 
     // generate Docker image *without* using docker-engine
-    id("com.google.cloud.tools.jib").version("1.6.1")
+    id("com.google.cloud.tools.jib").version("2.0.0")
 }
 
 group = "io.eliez.banking"
