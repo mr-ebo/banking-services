@@ -1,6 +1,6 @@
 package io.eliez.banking.model
 
-import org.jetbrains.exposed.dao.LongIdTable
+import org.jetbrains.exposed.dao.id.LongIdTable
 import java.math.BigDecimal
 
 object Transfers : LongIdTable() {

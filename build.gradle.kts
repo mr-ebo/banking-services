@@ -36,7 +36,7 @@ repositories {
 }
 
 val ktorVersion = "1.3.1"
-val exposedVersion = "0.17.3"
+val exposedVersion = "0.21.1"
 
 application {
     mainClassName = "io.ktor.server.netty.EngineMain"
@@ -49,7 +49,9 @@ dependencies {
     implementation("io.ktor", "ktor-jackson", ktorVersion)
 
     implementation("com.h2database", "h2", "1.4.199")
-    implementation("org.jetbrains.exposed", "exposed", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("com.zaxxer", "HikariCP", "3.4.1")
     implementation("io.github.microutils", "kotlin-logging", "1.7.6")
 
