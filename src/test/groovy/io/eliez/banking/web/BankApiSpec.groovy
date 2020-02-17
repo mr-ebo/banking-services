@@ -48,8 +48,6 @@ class BankApiSpec extends Specification {
         serverStart(SERVER_PORT)
     }
 
-    }
-
     @Unroll
     def 'create account #newAccount'() {
         when:
