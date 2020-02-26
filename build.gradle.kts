@@ -7,22 +7,22 @@ plugins {
     kotlin("jvm") version "1.3.60"
 
     // infers 'project.version' from last annotated Git tag
-    id("nebula.release") version "11.1.0"
+    id("nebula.release") version "15.3.1"
 
     // create uber-jar
-    id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 
     // generate terse test report on console
-    id("com.adarshr.test-logger") version "2.0.0"
+    id("com.adarshr.test-logger") version "3.0.0"
 
     // report current code coverage
-    id("com.github.ksoichiro.console.reporter") version "0.6.2"
+    id("com.github.ksoichiro.console.reporter") version "0.6.3"
 
     // generate API documentation
     id("org.asciidoctor.convert").version("1.5.9")
 
     // generate Docker image *without* using docker-engine
-    id("com.google.cloud.tools.jib").version("2.0.0")
+    id("com.google.cloud.tools.jib") version "3.1.3"
 }
 
 group = "io.eliez.banking"
