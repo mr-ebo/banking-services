@@ -31,15 +31,14 @@ val dockerGroup = "eliezio"
 val dockerRegistry: String? by project
 
 repositories {
-    jcenter()
-    maven(url = "https://dl.bintray.com/kotlin/ktor")   // for newest ktor artifacts
+    mavenCentral()
 }
 
 val ktorVersion = "1.3.1"
 val exposedVersion = "0.21.1"
 
 application {
-    mainClassName = "io.ktor.server.netty.EngineMain"
+    mainClass.set("io.ktor.server.netty.EngineMain")
 }
 
 dependencies {
@@ -55,7 +54,7 @@ dependencies {
     implementation("com.zaxxer", "HikariCP", "3.4.1")
     implementation("io.github.microutils", "kotlin-logging", "1.7.6")
 
-    runtime("ch.qos.logback", "logback-classic", "1.2.3")
+    runtimeOnly("ch.qos.logback", "logback-classic", "1.2.3")
 
     testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
     testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", "0.7.2") {
@@ -74,7 +73,7 @@ tasks.compileKotlin {
 tasks {
     jacocoTestReport {
         reports {
-            html.isEnabled = true
+            html.required.set(true)
         }
     }
 
@@ -82,7 +81,7 @@ tasks {
         dependsOn(jacocoTestReport)
 
         doLast {
-            val htmlDir = jacocoTestReport.get().reports.html.destination
+            val htmlDir = jacocoTestReport.get().reports.html.outputLocation
             println("\nThe JaCoCo HTML report is available at file://$htmlDir/index.html")
         }
     }
@@ -100,6 +99,7 @@ tasks.withType<AbstractArchiveTask> {
 /*
  * Online API documentation
  */
+/*
 val snippetsDir = "$projectDir/src/docs/asciidoc/snippets"
 
 tasks {
@@ -123,6 +123,7 @@ tasks {
         dependsOn(asciidoctor)
     }
 }
+*/
 
 /*
  * Docker Image
@@ -139,7 +140,7 @@ jib {
     }
     container {
         jvmFlags = listOf("-noverify")
-        mainClass = application.mainClassName
+        mainClass = application.mainClass.get()
         ports = listOf("8080")
     }
 }
