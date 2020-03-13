@@ -15,7 +15,7 @@ fun Route.transfer(bankService: BankService) {
 
     route("/api/v1/transfers") {
 
-        post("/") {
+        post {
             val (statusCode: HttpStatusCode, message: String?) = try {
                 val transfer = call.receive<NewTransfer>()
                 bankService.createTransfer(transfer)

@@ -16,7 +16,7 @@ fun Route.account(bankService: BankService) {
 
     route("/api/v1/accounts") {
 
-        get("/{iban}") {
+        get("{iban}") {
             val iban = call.parameters["iban"]!!
             val account = bankService.getAccount(iban)
             if (account != null) {
@@ -26,7 +26,7 @@ fun Route.account(bankService: BankService) {
             }
         }
 
-        post("/") {
+        post {
             val (statusCode: HttpStatusCode, message: String?) = try {
                 val account = call.receive<NewAccount>()
                 bankService.createAccount(account)

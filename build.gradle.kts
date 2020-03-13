@@ -4,7 +4,7 @@ plugins {
     application
     jacoco
 
-    kotlin("jvm") version "1.3.60"
+    kotlin("jvm") version "1.5.21"
 
     // infers 'project.version' from last annotated Git tag
     id("nebula.release") version "15.3.1"
@@ -43,12 +43,13 @@ repositories {
 }
 
 application {
-    mainClass.set("io.ktor.server.netty.EngineMain")
+    mainClass.set("io.eliez.banking.MainKt")
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
 
+    implementation("io.ktor", "ktor-server-core", ktorVersion)
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
     implementation("io.ktor", "ktor-jackson", ktorVersion)
 
@@ -62,6 +63,7 @@ dependencies {
     runtimeOnly("ch.qos.logback", "logback-classic", logbackVersion)
 
     testImplementation("org.spockframework", "spock-core", spockVersion)
+    testImplementation("io.ktor", "ktor-server-test-host", ktorVersion)
     testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", httpBuilderVersion) {
         exclude("commons-logging", "commons-logging")
     }

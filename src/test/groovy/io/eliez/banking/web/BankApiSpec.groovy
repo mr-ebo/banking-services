@@ -7,24 +7,22 @@ import groovyx.net.http.AsyncHTTPBuilder
 import groovyx.net.http.HttpResponseDecorator
 import groovyx.net.http.HttpResponseException
 import groovyx.net.http.RESTClient
+import io.eliez.banking.MainKt
 import io.eliez.banking.model.NewAccount
 import io.eliez.banking.model.NewTransfer
+import io.ktor.server.engine.EmbeddedServerKt
+import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import io.netty.channel.socket.nio.NioServerSocketChannel
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 
 import static groovyx.net.http.ContentType.JSON
-import static io.ktor.server.engine.CommandLineKt.commandLineEnvironment
 
 class BankApiSpec extends Specification {
-
-    // TODO: should be random to avoid clashing with any server running on local machine.
-    //  See https://github.com/ktorio/ktor/issues/909
-    static final int SERVER_PORT = 55555
 
     static final List<NewAccount> KNOWN_ACCOUNTS = [
         new NewAccount("BR7399674773964894418786327F5", "106.93".toBigDecimal()),
@@ -42,10 +40,26 @@ class BankApiSpec extends Specification {
         configOverride(BigDecimal).format = JsonFormat.Value.forShape(JsonFormat.Shape.STRING)
     }
 
-    def client = new RESTClient("http://localhost:$SERVER_PORT")
+    @Shared
+    int localPort
+
+    RESTClient client
 
     def setupSpec() {
-        serverStart(SERVER_PORT)
+        def engine = EmbeddedServerKt.embeddedServer(Netty.INSTANCE, 0, "0.0.0.0", [], {}, MainKt.&module)
+        engine.start(false)
+        localPort = getPortNumber(engine)
+    }
+
+    // Get the bound port number for Ktor via extremely dodgy reflection.
+    // See https://youtrack.jetbrains.com/issue/KTOR-686
+    def getPortNumber(NettyApplicationEngine engine) {
+        def channels = engine.channels as ArrayList<NioServerSocketChannel>
+        return channels[0].localAddress().port
+    }
+
+    def setup() {
+        client = new RESTClient("http://localhost:${localPort}")
     }
 
     @Unroll
@@ -212,16 +226,6 @@ class BankApiSpec extends Specification {
             KNOWN_ACCOUNTS.forEach { acc ->
                 assert getBalance(acc.iban) == acc.balance
             }
-    }
-
-    static void serverStart(int port) {
-        def applicationEnvironment = commandLineEnvironment(["-port=$port"] as String[])
-        new NettyApplicationEngine(applicationEnvironment, {}).with {
-            start(false)
-            addShutdownHook {
-                stop(0, 0, TimeUnit.SECONDS)
-            }
-        }
     }
 
     def incompleteJsonGenerator(Object obj) {
