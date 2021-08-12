@@ -16,7 +16,6 @@ import io.ktor.server.netty.NettyApplicationEngine
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import spock.lang.Shared
 import spock.lang.Specification
-import spock.lang.Unroll
 
 import java.util.concurrent.Future
 
@@ -62,7 +61,6 @@ class BankApiSpec extends Specification {
         client = new RESTClient("http://localhost:${localPort}")
     }
 
-    @Unroll
     def 'create account #newAccount'() {
         when:
             def response = client.post(
@@ -76,7 +74,6 @@ class BankApiSpec extends Specification {
             newAccount << KNOWN_ACCOUNTS
     }
 
-    @Unroll
     def 'retrieve created account #iban'() {
         expect:
             getBalance(iban) == newAccount.balance
@@ -85,7 +82,6 @@ class BankApiSpec extends Specification {
             newAccount << KNOWN_ACCOUNTS
     }
 
-    @Unroll
     def 'fail to create account due to incomplete request: #json'() {
         when:
             client.post(
@@ -101,7 +97,6 @@ class BankApiSpec extends Specification {
             json << incompleteJsonGenerator(new NewAccount(UNKNOWN_IBAN, BigDecimal.ONE))
     }
 
-    @Unroll
     def 'fail to retrieve account "#iban"'() {
         when:
             client.get(
@@ -115,7 +110,6 @@ class BankApiSpec extends Specification {
             iban << ['', UNKNOWN_IBAN]
     }
 
-    @Unroll
     def 'fail to transfer due to #reason'() {
         given:
             def newTransfer = new NewTransfer(iban1, iban2, amount)
@@ -138,7 +132,6 @@ class BankApiSpec extends Specification {
             'zero amount'                 | KNOWN_ACCOUNTS[0].iban | KNOWN_ACCOUNTS[1].iban | BigDecimal.ZERO
     }
 
-    @Unroll
     def 'fail to transfer due to incomplete request: #json'() {
         when:
             client.post(
@@ -175,7 +168,6 @@ class BankApiSpec extends Specification {
             getBalance(acc2.iban) == acc2.balance
     }
 
-    @Unroll
     def 'transfer #amount from account with sufficient funds: #iban1 -> #iban2'() {
         given:
             def transfer = new NewTransfer(iban1, iban2, amount)

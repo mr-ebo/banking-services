@@ -62,12 +62,14 @@ dependencies {
 
     runtimeOnly("ch.qos.logback", "logback-classic", logbackVersion)
 
-    testImplementation("org.spockframework", "spock-core", spockVersion)
     testImplementation("io.ktor", "ktor-server-test-host", ktorVersion)
+    testImplementation("org.spockframework", "spock-core", spockVersion)
     testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", httpBuilderVersion) {
         exclude("commons-logging", "commons-logging")
     }
-    testRuntime("org.slf4j", "jcl-over-slf4j", slf4jVersion)
+    testImplementation("org.slf4j", "jcl-over-slf4j", slf4jVersion)
+    testRuntimeOnly("org.codehaus.groovy", "groovy-json", groovyVersion)
+    testRuntimeOnly("org.codehaus.groovy", "groovy-xml", groovyVersion)
 }
 
 tasks.compileKotlin {
@@ -77,6 +79,12 @@ tasks.compileKotlin {
 /*
  * Test
  */
+tasks.named<Test>("test") {
+    useJUnitPlatform()
+    minHeapSize = "512M"
+    jvmArgs = listOf("-noverify")
+}
+
 tasks {
     jacocoTestReport {
         reports {
