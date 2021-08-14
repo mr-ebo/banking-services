@@ -24,15 +24,23 @@ plugins {
 
 group = "io.eliez.banking"
 
+val exposedVersion: String by project
+val groovyVersion: String by project
+val h2Version: String by project
+val hikariVersion: String by project
+val httpBuilderVersion: String by project
+val kotlinLoggingVersion: String by project
+val ktorVersion: String by project
+val logbackVersion: String by project
+val slf4jVersion: String by project
+val spockVersion: String by project
+
 val dockerGroup = "eliezio"
 val dockerRegistry: String? by project
 
 repositories {
     mavenCentral()
 }
-
-val ktorVersion = "1.3.1"
-val exposedVersion = "0.21.1"
 
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")
@@ -44,20 +52,20 @@ dependencies {
     implementation("io.ktor", "ktor-server-netty", ktorVersion)
     implementation("io.ktor", "ktor-jackson", ktorVersion)
 
-    implementation("com.h2database", "h2", "1.4.199")
+    implementation("com.h2database", "h2", h2Version)
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
-    implementation("com.zaxxer", "HikariCP", "3.4.1")
-    implementation("io.github.microutils", "kotlin-logging", "1.7.6")
+    implementation("com.zaxxer", "HikariCP", hikariVersion)
+    implementation("io.github.microutils", "kotlin-logging", kotlinLoggingVersion)
 
-    runtimeOnly("ch.qos.logback", "logback-classic", "1.2.3")
+    runtimeOnly("ch.qos.logback", "logback-classic", logbackVersion)
 
-    testImplementation("org.spockframework", "spock-core", "1.3-groovy-2.5")
-    testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", "0.7.2") {
+    testImplementation("org.spockframework", "spock-core", spockVersion)
+    testImplementation("org.codehaus.groovy.modules.http-builder", "http-builder", httpBuilderVersion) {
         exclude("commons-logging", "commons-logging")
     }
-    testRuntime("org.slf4j", "jcl-over-slf4j", "1.7.26")
+    testRuntime("org.slf4j", "jcl-over-slf4j", slf4jVersion)
 }
 
 tasks.compileKotlin {
