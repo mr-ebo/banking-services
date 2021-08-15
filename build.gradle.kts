@@ -1,3 +1,5 @@
+import org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension
+
 plugins {
     java
     groovy
@@ -17,6 +19,8 @@ plugins {
 
     // report current code coverage
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
+
+    id("org.owasp.dependencycheck") version "6.2.2"
 
     // generate Docker image *without* using docker-engine
     id("com.google.cloud.tools.jib") version "3.1.3"
@@ -83,6 +87,14 @@ tasks.named<Test>("test") {
     useJUnitPlatform()
     minHeapSize = "512M"
     jvmArgs = listOf("-noverify")
+}
+
+configure<DependencyCheckExtension> {
+    failBuildOnCVSS = 0f
+
+    suppressionFile = file("$rootDir/cve-suppressions.xml").toString()
+
+    analyzers.assemblyEnabled = false
 }
 
 tasks {
