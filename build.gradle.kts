@@ -18,9 +18,6 @@ plugins {
     // report current code coverage
     id("com.github.ksoichiro.console.reporter") version "0.6.3"
 
-    // generate API documentation
-    id("org.asciidoctor.convert").version("1.5.9")
-
     // generate Docker image *without* using docker-engine
     id("com.google.cloud.tools.jib") version "3.1.3"
 }
@@ -95,35 +92,6 @@ tasks.withType<AbstractArchiveTask> {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
 }
-
-/*
- * Online API documentation
- */
-/*
-val snippetsDir = "$projectDir/src/docs/asciidoc/snippets"
-
-tasks {
-    asciidoctor {
-        inputs.dir(snippetsDir)
-        attributes(mapOf(
-            "project-version" to version.toString(),
-            "snippets" to snippetsDir,
-            //** reproducible build
-            "reproducible" to ""
-        ))
-        doLast {
-            copy {
-                from("$outputDir/html5")
-                into("$buildDir/resources/main/static/docs")
-            }
-        }
-    }
-
-    shadowJar {
-        dependsOn(asciidoctor)
-    }
-}
-*/
 
 /*
  * Docker Image
